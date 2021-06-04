@@ -39,15 +39,6 @@ class Tree(object):
 
         return self.minValue(root.left)
 
-    def preOrder(self, root):
-
-        if not root:
-            return
-
-        print("{0} ".format(root.number), end="")
-        self.preOrder(root.left)
-        self.preOrder(root.right)
-
     def rotateL(self, node):
 
         self.rotatesL += 1

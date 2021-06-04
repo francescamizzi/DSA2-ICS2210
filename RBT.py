@@ -1,250 +1,254 @@
-# Implementing Red-Black Tree in Python
-
-
 import random
 
-
-# Node creation
 class Node():
-    def __init__(self, item):
-        self.item = item
+    def __init__(self, number):
+        self.number = number
         self.parent = None
         self.left = None
         self.right = None
-        self.color = 1
+        self.colour = 1
 
 
 class Tree():
     def __init__(self):
         self.TNULL = Node(0)
-        self.TNULL.color = 0
+        self.TNULL.colour = 0
         self.TNULL.left = None
         self.TNULL.right = None
         self.root = self.TNULL
+        self.rotatesL = 0
+        self.rotatesR = 0
+        self.nodes = 0
 
-    # Search the tree
-    def search_tree_helper(self, node, key):
-        if node == TNULL or key == node.item:
-            return node
+    def rotateL(self, node):
+        self.rotatesL += 1
+        nodeR = node.right
+        node.right = nodeR.left
+        if nodeR.left != self.TNULL:
+            nodeR.left.parent = node
 
-        if key < node.item:
-            return self.search_tree_helper(node.left, key)
-        return self.search_tree_helper(node.right, key)
-
-    # Balancing the tree after deletion
-    def delete_fix(self, x):
-        while x != self.root and x.color == 0:
-            if x == x.parent.left:
-                s = x.parent.right
-                if s.color == 1:
-                    s.color = 0
-                    x.parent.color = 1
-                    self.left_rotate(x.parent)
-                    s = x.parent.right
-
-                if s.left.color == 0 and s.right.color == 0:
-                    s.color = 1
-                    x = x.parent
-                else:
-                    if s.right.color == 0:
-                        s.left.color = 0
-                        s.color = 1
-                        self.right_rotate(s)
-                        s = x.parent.right
-
-                    s.color = x.parent.color
-                    x.parent.color = 0
-                    s.right.color = 0
-                    self.left_rotate(x.parent)
-                    x = self.root
-            else:
-                s = x.parent.left
-                if s.color == 1:
-                    s.color = 0
-                    x.parent.color = 1
-                    self.right_rotate(x.parent)
-                    s = x.parent.left
-
-                if s.right.color == 0 and s.right.color == 0:
-                    s.color = 1
-                    x = x.parent
-                else:
-                    if s.left.color == 0:
-                        s.right.color = 0
-                        s.color = 1
-                        self.left_rotate(s)
-                        s = x.parent.left
-
-                    s.color = x.parent.color
-                    x.parent.color = 0
-                    s.left.color = 0
-                    self.right_rotate(x.parent)
-                    x = self.root
-        x.color = 0
-
-    def __rb_transplant(self, u, v):
-        if u.parent == None:
-            self.root = v
-        elif u == u.parent.left:
-            u.parent.left = v
+        nodeR.parent = node.parent
+        if node.parent == None:
+            self.root = nodeR
+        elif node == node.parent.left:
+            node.parent.left = nodeR
         else:
-            u.parent.right = v
-        v.parent = u.parent
+            node.parent.right = nodeR
+        nodeR.left = node
+        node.parent = nodeR
 
-    # Node deletion
-    def delete_node_helper(self, node, key):
-        z = self.TNULL
+    def rotateR(self, node):
+        self.rotatesR += 1
+        nodeL = node.left
+        node.left = nodeL.right
+        if nodeL.right != self.TNULL:
+            nodeL.right.parent = node
+
+        nodeL.parent = node.parent
+        if node.parent == None:
+            self.root = nodeL
+        elif node == node.parent.right:
+            node.parent.right = nodeL
+        else:
+            node.parent.left = nodeL
+        nodeL.right = node
+        node.parent = nodeL
+
+    def insert(self, num):
+        node = Node(num)
+        node.parent = None
+        node.number = num
+        node.left = self.TNULL
+        node.right = self.TNULL
+        node.colour = 1
+
+        j = None
+        k = self.root
+
+        while k != self.TNULL:
+            j = k
+            if node.number < k.number:
+                k = k.left
+            else:
+                k = k.right
+
+        node.parent = j
+        if j == None:
+            self.root = node
+        elif node.number < j.number:
+            j.left = node
+        else:
+            j.right = node
+
+        if node.parent == None:
+            node.colour = 0
+            return
+
+        if node.parent.parent == None:
+            return
+
+        self.insert_balance(node)
+
+        self.nodes += 1
+
+    def insert_balance(self, node):
+        while node.parent.colour == 1:
+            if node.parent == node.parent.parent.right:
+                uncle = node.parent.parent.left
+                if uncle.colour == 1:
+                    uncle.colour = 0
+                    node.parent.colour = 0
+                    node.parent.parent.colour = 1
+                    node = node.parent.parent
+                else:
+                    if node == node.parent.left:
+                        node = node.parent
+                        self.rotateR(node)
+                    node.parent.colour = 0
+                    node.parent.parent.colour = 1
+                    self.rotateL(node.parent.parent)
+            else:
+                uncle = node.parent.parent.right
+
+                if uncle.colour == 1:
+                    uncle.colour = 0
+                    node.parent.colour = 0
+                    node.parent.parent.colour = 1
+                    node = node.parent.parent
+                else:
+                    if node == node.parent.right:
+                        node = node.parent
+                        self.rotateL(node)
+                    node.parent.colour = 0
+                    node.parent.parent.colour = 1
+                    self.rotateR(node.parent.parent)
+            if node == self.root:
+                break
+        self.root.colour = 0
+
+    def remove(self, number):
+        self.remove_node(self.root, number)
+
+    def remove_node(self, node, key):
+        a = self.TNULL
         while node != self.TNULL:
-            if node.item == key:
-                z = node
+            if node.number == key:
+                a = node
 
-            if node.item <= key:
+            if node.number <= key:
                 node = node.right
             else:
                 node = node.left
 
-        if z == self.TNULL:
-            print("Cannot find key in the tree")
+        if a == self.TNULL:
             return
 
-        y = z
-        y_original_color = y.color
-        if z.left == self.TNULL:
-            x = z.right
-            self.__rb_transplant(z, z.right)
-        elif (z.right == self.TNULL):
-            x = z.left
-            self.__rb_transplant(z, z.left)
+        b = a
+        bogc = b.colour
+        if a.left == self.TNULL:
+            c = a.right
+            self.exchange(a, a.right)
+        elif (a.right == self.TNULL):
+            c = a.left
+            self.exchange(a, a.left)
         else:
-            y = self.minimum(z.right)
-            y_original_color = y.color
-            x = y.right
-            if y.parent == z:
-                x.parent = y
+            b = self.minimum(a.right)
+            bogc = b.colour
+            c = b.right
+            if b.parent == a:
+                c.parent = b
             else:
-                self.__rb_transplant(y, y.right)
-                y.right = z.right
-                y.right.parent = y
+                self.exchange(b, b.right)
+                b.right = a.right
+                b.right.parent = b
 
-            self.__rb_transplant(z, y)
-            y.left = z.left
-            y.left.parent = y
-            y.color = z.color
-        if y_original_color == 0:
-            self.delete_fix(x)
+            self.exchange(a, b)
+            b.left = a.left
+            b.left.parent = b
+            b.colour = a.colour
+        if bogc == 0:
+            self.remove_balance(c)
 
-    # Balance the tree after insertion
-    def fix_insert(self, k):
-        while k.parent.color == 1:
-            if k.parent == k.parent.parent.right:
-                u = k.parent.parent.left
-                if u.color == 1:
-                    u.color = 0
-                    k.parent.color = 0
-                    k.parent.parent.color = 1
-                    k = k.parent.parent
-                else:
-                    if k == k.parent.left:
-                        k = k.parent
-                        self.right_rotate(k)
-                    k.parent.color = 0
-                    k.parent.parent.color = 1
-                    self.left_rotate(k.parent.parent)
-            else:
-                u = k.parent.parent.right
+        self.nodes -= 1
 
-                if u.color == 1:
-                    u.color = 0
-                    k.parent.color = 0
-                    k.parent.parent.color = 1
-                    k = k.parent.parent
-                else:
-                    if k == k.parent.right:
-                        k = k.parent
-                        self.left_rotate(k)
-                    k.parent.color = 0
-                    k.parent.parent.color = 1
-                    self.right_rotate(k.parent.parent)
-            if k == self.root:
-                break
-        self.root.color = 0
+    def minimum(self, node):
+        while node.left != self.TNULL:
+            node = node.left
+        return node
 
-
-    def searchTree(self, k):
-        return self.search_tree_helper(self.root, k)
-
-    def left_rotate(self, x):
-        y = x.right
-        x.right = y.left
-        if y.left != self.TNULL:
-            y.left.parent = x
-
-        y.parent = x.parent
+    def exchange(self, x, y):
         if x.parent == None:
             self.root = y
         elif x == x.parent.left:
             x.parent.left = y
         else:
             x.parent.right = y
-        y.left = x
-        x.parent = y
-
-    def right_rotate(self, x):
-        y = x.left
-        x.left = y.right
-        if y.right != self.TNULL:
-            y.right.parent = x
-
         y.parent = x.parent
-        if x.parent == None:
-            self.root = y
-        elif x == x.parent.right:
-            x.parent.right = y
-        else:
-            x.parent.left = y
-        y.right = x
-        x.parent = y
 
-    def insert(self, key):
-        node = Node(key)
-        node.parent = None
-        node.item = key
-        node.left = self.TNULL
-        node.right = self.TNULL
-        node.color = 1
+    def remove_balance(self, node):
+        while node != self.root and node.colour == 0:
+            if node == node.parent.left:
+                x = node.parent.right
+                if x.colour == 1:
+                    x.colour = 0
+                    node.parent.colour = 1
+                    self.rotateL(node.parent)
+                    x = node.parent.right
 
-        y = None
-        x = self.root
+                if x.left.colour == 0 and x.right.colour == 0:
+                    x.colour = 1
+                    node = node.parent
+                else:
+                    if x.right.colour == 0:
+                        x.left.colour = 0
+                        x.colour = 1
+                        self.rotateR(x)
+                        x = node.parent.right
 
-        while x != self.TNULL:
-            y = x
-            if node.item < x.item:
-                x = x.left
+                    x.colour = node.parent.colour
+                    node.parent.colour = 0
+                    x.right.colour = 0
+                    self.rotateL(node.parent)
+                    node = self.root
             else:
-                x = x.right
+                x = node.parent.left
+                if x.colour == 1:
+                    x.colour = 0
+                    node.parent.colour = 1
+                    self.rotateR(node.parent)
+                    x = node.parent.left
 
-        node.parent = y
-        if y == None:
-            self.root = node
-        elif node.item < y.item:
-            y.left = node
-        else:
-            y.right = node
+                if x.right.colour == 0 and x.right.colour == 0:
+                    x.colour = 1
+                    node = node.parent
+                else:
+                    if x.left.colour == 0:
+                        x.right.colour = 0
+                        x.colour = 1
+                        self.rotateL(x)
+                        x = node.parent.left
 
-        if node.parent == None:
-            node.color = 0
-            return
+                    x.colour = node.parent.colour
+                    node.parent.colour = 0
+                    x.left.colour = 0
+                    self.rotateR(node.parent)
+                    node = self.root
+        node.colour = 0
 
-        if node.parent.parent == None:
-            return
+    def search(self, k):
+        return self.search_nodes(self.root, k)
 
-        self.fix_insert(node)
+    def search_nodes(self, node, key):
+        if node == TNULL or key == node.number:
+            return node
 
-    def delete_node(self, item):
-        self.delete_node_helper(self.root, item)
+        if key < node.number:
+            return self.search_nodes(node.left, key)
+        return self.search_nodes(node.right, key)
 
-    def print_tree(self):
-        self.__print_helper(self.root, "", True)
+    def resetCounters(self):
+        self.rotatesL = 0
+        self.rotatesR = 0
 
 
 if __name__ == "__main__":
@@ -269,7 +273,7 @@ if __name__ == "__main__":
     root = None
 
     for num in X:
-        root = tree.ins(root, num)
+        root = tree.insert(num)
 
     print('----------------------------')
     print('|      After Insertion     |')
@@ -278,13 +282,12 @@ if __name__ == "__main__":
     print("Rotations Left: " + str(tree.rotatesL))
     print("Rotations Right: " + str(tree.rotatesR))
     print("Total Rotations: " + str(tree.rotatesL + tree.rotatesR))
-    print("Tree Height: " + str(tree.height(root)))
-    print("Nodes: " + str(tree.numOfNodes(root)))
+    print("Nodes: " + str(tree.nodes))
 
     tree.resetCounters()
 
     for num in Y:
-        root = tree.remove(root, num)
+        root = tree.remove(num)
 
     print('---------------------------')
     print('|      After Deletion     |')
@@ -293,15 +296,5 @@ if __name__ == "__main__":
     print("Rotations Left: " + str(tree.rotatesL))
     print("Rotations Right: " + str(tree.rotatesR))
     print("Total Rotations: " + str(tree.rotatesL + tree.rotatesR))
-    print("Tree Height: " + str(tree.height(root)))
-    print("Nodes: " + str(tree.numOfNodes(root)))
-    tree.insert(55)
-    tree.insert(40)
-    tree.insert(65)
-    tree.insert(60)
-    tree.insert(75)
-    tree.insert(57)
+    print("Nodes: " + str(tree.nodes))
 
-
-    print("\nAfter deleting an element")
-    tree.delete_node(40)
