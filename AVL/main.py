@@ -1,3 +1,6 @@
+import random
+
+
 class Node(object):
     def __init__(self, val):
         self.val = val
@@ -7,6 +10,12 @@ class Node(object):
 
 
 class Tree(object):
+    def __init__(self):
+        self.rotations = 0
+        self.height = 0
+        self.nodes = 0
+        self.comparisons = 0
+
     def height(self, root):
         if not root:
             return 0
@@ -17,13 +26,13 @@ class Tree(object):
         if not root:
             return 0
 
-        return self.height(root.left) - self.getHeight(root.right)
+        return self.height(root.left) - self.height(root.right)
 
     def minValue(self, root):
         if root is None or root.left is None:
             return root
 
-        return self.getMinValueNode(root.left)
+        return self.minValue(root.left)
 
     def preOrder(self, root):
 
@@ -53,7 +62,7 @@ class Tree(object):
     def rotateR(self, node):
 
         nodeL = node.left
-        nodeN = y.right
+        nodeN = nodeL.right
 
         # Perform rotation
         nodeL.right = node
@@ -65,3 +74,129 @@ class Tree(object):
 
         # Return the new root
         return nodeL
+
+    def ins(self, root, num):
+
+        # Step 1 - Perform normal BST
+        if not root:
+            return Node(num)
+        elif num < root.val:
+            root.left = self.ins(root.left, num)
+        else:
+            root.right = self.ins(root.right, num)
+
+        # Step 2 - Update the height of the
+        # ancestor node
+        root.height = 1 + max(self.height(root.left), self.height(root.right))
+
+        # Step 3 - Get the balance factor
+        balance = self.balance(root)
+
+        # Step 4 - If the node is unbalanced,
+        # then try out the 4 cases
+        # Case 1 - Left Left
+        if balance > 1 and num < root.left.val:
+            return self.rotateR(root)
+
+        # Case 2 - Right Right
+        if balance < -1 and num > root.right.val:
+            return self.rotateL(root)
+
+        # Case 3 - Left Right
+        if balance > 1 and num > root.left.val:
+            root.left = self.rotateL(root.left)
+            return self.rotateR(root)
+
+        # Case 4 - Right Left
+        if balance < -1 and num < root.right.val:
+            root.right = self.rotateR(root.right)
+            return self.rotateL(root)
+
+        return root
+
+    def remove(self, root, num):
+
+        # Step 1 - Perform standard BST remove
+        if not root:
+            return root
+
+        elif num < root.val:
+            root.left = self.remove(root.left, num)
+
+        elif num > root.val:
+            root.right = self.remove(root.right, num)
+
+        else:
+            if root.left is None:
+                t1 = root.right
+                root = None
+                return t1
+
+            elif root.right is None:
+                t2 = root.left
+                root = None
+                return t2
+
+            t3 = self.minValue(root.right)
+            root.val = t3.val
+            root.right = self.remove(root.right, t3.val)
+
+        # If the tree has only one node,
+        # simply return it
+        if root is None:
+            return root
+
+        # Step 2 - Update the height of the 
+        # ancestor node
+        root.height = 1 + max(self.height(root.left), self.height(root.right))
+
+        # Step 3 - Get the balance factor
+        balance = self.balance(root)
+
+        # Step 4 - If the node is unbalanced, 
+        # then try out the 4 cases
+        # Case 1 - Left Left
+        if balance > 1 and self.balance(root.left) >= 0:
+            return self.rotateR(root)
+
+        # Case 2 - Right Right
+        if balance < -1 and self.balance(root.right) <= 0:
+            return self.rotateL(root)
+
+        # Case 3 - Left Right
+        if balance > 1 and self.balance(root.left) < 0:
+            root.left = self.rotateL(root.left)
+            return self.rotateR(root)
+
+        # Case 4 - Right Left
+        if balance < -1 and self.balance(root.right) > 0:
+            root.right = self.rotateR(root.right)
+            return self.rotateL(root)
+
+        return root
+
+
+n = random.randint(1000, 3000)
+X = random.sample(range(-3000, 3000), n)
+
+print("Length of original: " + str(n))
+
+m = random.randint(500, 1000)
+Y = random.sample(range(-3000, 3000), n)
+
+tree = Tree()
+root = None
+
+for num in X:
+    root = tree.ins(root, num)
+
+print("Preorder Traversal after insertion -")
+tree.preOrder(root)
+print()
+
+for num in Y:
+    root = tree.remove(root, num)
+
+print("Preorder Traversal after deletion -")
+tree.preOrder(root)
+print()
