@@ -10,11 +10,18 @@ class Node(object):
 
 
 class Tree(object):
+
     def __init__(self):
-        self.rotations = 0
-        self.height = 0
+        self.rotatesL = 0
+        self.rotatesR = 0
+        self.treeHeight = 0
         self.nodes = 0
-        self.comparisons = 0
+
+    def resetCounters(self):
+        self.rotatesL = 0
+        self.rotatesR = 0
+        self.treeHeight = 0
+        self.nodes = 0
 
     def height(self, root):
         if not root:
@@ -45,6 +52,8 @@ class Tree(object):
 
     def rotateL(self, node):
 
+        self.rotatesL += 1
+
         nodeR = node.right
         nodeN = nodeR.left
 
@@ -61,6 +70,8 @@ class Tree(object):
 
     def rotateR(self, node):
 
+        self.rotatesR += 1
+
         nodeL = node.left
         nodeN = nodeL.right
 
@@ -76,7 +87,7 @@ class Tree(object):
         return nodeL
 
     def ins(self, root, num):
-
+        self.nodes += 1
         # Step 1 - Perform normal BST
         if not root:
             return Node(num)
@@ -175,28 +186,55 @@ class Tree(object):
 
         return root
 
+    def countNodes(self, root):
 
-n = random.randint(1000, 3000)
-X = random.sample(range(-3000, 3000), n)
+        if not root:
+            return
 
-print("Length of original: " + str(n))
+        self.countNodes(root.left)
+        self.nodes += 1
+        self.countNodes(root.right)
 
-m = random.randint(500, 1000)
-Y = random.sample(range(-3000, 3000), n)
+    def numOfNodes(self, root):
+        self.nodes = 0
+        self.countNodes(root)
+        return self.nodes
 
-tree = Tree()
-root = None
 
-for num in X:
-    root = tree.ins(root, num)
+if __name__ == '__main__':
+    n = random.randint(1000, 3000)
+    X = random.sample(range(-3000, 3000), n)
 
-print("Preorder Traversal after insertion -")
-tree.preOrder(root)
-print()
+    m = random.randint(500, 1000)
+    Y = random.sample(range(-3000, 3000), n)
 
-for num in Y:
-    root = tree.remove(root, num)
+    tree = Tree()
+    root = None
 
-print("Preorder Traversal after deletion -")
-tree.preOrder(root)
-print()
+    for num in X:
+        root = tree.ins(root, num)
+
+    print("Preorder Traversal after insertion -")
+    tree.preOrder(root)
+    print()
+
+    print("Rotations Left: " + str(tree.rotatesL))
+    print("Rotations Right: " + str(tree.rotatesR))
+    print("Total Rotations: " + str(tree.rotatesL + tree.rotatesR))
+    print("Tree Height: " + str(tree.height(root)))
+    print("Nodes: " + str(tree.numOfNodes(root)))
+
+    tree.resetCounters()
+
+    for num in Y:
+        root = tree.remove(root, num)
+
+    print("Preorder Traversal after deletion -")
+    tree.preOrder(root)
+    print()
+
+    print("Rotations Left: " + str(tree.rotatesL))
+    print("Rotations Right: " + str(tree.rotatesR))
+    print("Total Rotations: " + str(tree.rotatesL + tree.rotatesR))
+    print("Tree Height: " + str(tree.height(root)))
+    print("Nodes: " + str(tree.numOfNodes(root)))
