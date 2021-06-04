@@ -2,8 +2,8 @@ import random
 
 
 class Node(object):
-    def __init__(self, val):
-        self.val = val
+    def __init__(self, num):
+        self.number = num
         self.left = None
         self.right = None
         self.height = 1
@@ -20,8 +20,6 @@ class Tree(object):
     def resetCounters(self):
         self.rotatesL = 0
         self.rotatesR = 0
-        self.treeHeight = 0
-        self.nodes = 0
 
     def height(self, root):
         if not root:
@@ -46,7 +44,7 @@ class Tree(object):
         if not root:
             return
 
-        print("{0} ".format(root.val), end="")
+        print("{0} ".format(root.number), end="")
         self.preOrder(root.left)
         self.preOrder(root.right)
 
@@ -91,7 +89,7 @@ class Tree(object):
         # Step 1 - Perform normal BST
         if not root:
             return Node(num)
-        elif num < root.val:
+        elif num < root.number:
             root.left = self.ins(root.left, num)
         else:
             root.right = self.ins(root.right, num)
@@ -106,20 +104,20 @@ class Tree(object):
         # Step 4 - If the node is unbalanced,
         # then try out the 4 cases
         # Case 1 - Left Left
-        if balance > 1 and num < root.left.val:
+        if balance > 1 and num < root.left.number:
             return self.rotateR(root)
 
         # Case 2 - Right Right
-        if balance < -1 and num > root.right.val:
+        if balance < -1 and num > root.right.number:
             return self.rotateL(root)
 
         # Case 3 - Left Right
-        if balance > 1 and num > root.left.val:
+        if balance > 1 and num > root.left.number:
             root.left = self.rotateL(root.left)
             return self.rotateR(root)
 
         # Case 4 - Right Left
-        if balance < -1 and num < root.right.val:
+        if balance < -1 and num < root.right.number:
             root.right = self.rotateR(root.right)
             return self.rotateL(root)
 
@@ -131,10 +129,10 @@ class Tree(object):
         if not root:
             return root
 
-        elif num < root.val:
+        elif num < root.number:
             root.left = self.remove(root.left, num)
 
-        elif num > root.val:
+        elif num > root.number:
             root.right = self.remove(root.right, num)
 
         else:
@@ -149,8 +147,8 @@ class Tree(object):
                 return t2
 
             t3 = self.minValue(root.right)
-            root.val = t3.val
-            root.right = self.remove(root.right, t3.val)
+            root.number = t3.number
+            root.right = self.remove(root.right, t3.number)
 
         # If the tree has only one node,
         # simply return it
@@ -206,7 +204,17 @@ if __name__ == '__main__':
     X = random.sample(range(-3000, 3000), n)
 
     m = random.randint(500, 1000)
-    Y = random.sample(range(-3000, 3000), n)
+    Y = random.sample(range(-3000, 3000), m)
+
+    common = 0
+
+    for number in Y:
+        if number in X:
+            common += 1
+
+    print("Set X contains %d elements" % n)
+    print("Set Y contains %d elements" % m)
+    print("Sets X and Y have %d elements in common" % common)
 
     tree = Tree()
     root = None
@@ -214,9 +222,9 @@ if __name__ == '__main__':
     for num in X:
         root = tree.ins(root, num)
 
-    print("Preorder Traversal after insertion -")
-    tree.preOrder(root)
-    print()
+    print('----------------------------')
+    print('|      After Insertion     |')
+    print('----------------------------')
 
     print("Rotations Left: " + str(tree.rotatesL))
     print("Rotations Right: " + str(tree.rotatesR))
@@ -229,12 +237,13 @@ if __name__ == '__main__':
     for num in Y:
         root = tree.remove(root, num)
 
-    print("Preorder Traversal after deletion -")
-    tree.preOrder(root)
-    print()
+    print('---------------------------')
+    print('|      After Deletion     |')
+    print('---------------------------')
 
     print("Rotations Left: " + str(tree.rotatesL))
     print("Rotations Right: " + str(tree.rotatesR))
     print("Total Rotations: " + str(tree.rotatesL + tree.rotatesR))
     print("Tree Height: " + str(tree.height(root)))
     print("Nodes: " + str(tree.numOfNodes(root)))
+
