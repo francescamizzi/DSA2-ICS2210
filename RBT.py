@@ -235,17 +235,6 @@ class Tree():
                     node = self.root
         node.colour = 0
 
-    def search(self, k):
-        return self.search_nodes(self.root, k)
-
-    def search_nodes(self, node, key):
-        if node == TNULL or key == node.number:
-            return node
-
-        if key < node.number:
-            return self.search_nodes(node.left, key)
-        return self.search_nodes(node.right, key)
-
     def resetCounters(self):
         self.rotatesL = 0
         self.rotatesR = 0
@@ -258,7 +247,7 @@ if __name__ == "__main__":
 
     m = random.randint(500, 1000)
     Y = random.sample(range(-3000, 3000), m)
-
+    
     common = 0
 
     for number in Y:
@@ -297,4 +286,3 @@ if __name__ == "__main__":
     print("Rotations Right: " + str(tree.rotatesR))
     print("Total Rotations: " + str(tree.rotatesL + tree.rotatesR))
     print("Nodes: " + str(tree.nodes))
-
