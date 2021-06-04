@@ -55,15 +55,12 @@ class Tree(object):
         nodeR = node.right
         nodeN = nodeR.left
 
-        # Perform rotation
         nodeR.left = node
         node.right = nodeN
 
-        # Update heights
         node.height = 1 + max(self.height(node.left), self.height(node.right))
         nodeR.height = 1 + max(self.height(nodeR.left), self.height(nodeR.right))
 
-        # Return the new root
         return nodeR
 
     def rotateR(self, node):
@@ -73,20 +70,17 @@ class Tree(object):
         nodeL = node.left
         nodeN = nodeL.right
 
-        # Perform rotation
         nodeL.right = node
         node.left = nodeN
 
-        # Update heights
         node.height = 1 + max(self.height(node.left), self.height(node.right))
         nodeL.height = 1 + max(self.height(nodeL.left), self.height(nodeL.right))
 
-        # Return the new root
         return nodeL
 
     def ins(self, root, num):
         self.nodes += 1
-        # Step 1 - Perform normal BST
+
         if not root:
             return Node(num)
         elif num < root.number:
@@ -94,29 +88,20 @@ class Tree(object):
         else:
             root.right = self.ins(root.right, num)
 
-        # Step 2 - Update the height of the
-        # ancestor node
         root.height = 1 + max(self.height(root.left), self.height(root.right))
 
-        # Step 3 - Get the balance factor
         balance = self.balance(root)
 
-        # Step 4 - If the node is unbalanced,
-        # then try out the 4 cases
-        # Case 1 - Left Left
         if balance > 1 and num < root.left.number:
             return self.rotateR(root)
 
-        # Case 2 - Right Right
         if balance < -1 and num > root.right.number:
             return self.rotateL(root)
 
-        # Case 3 - Left Right
         if balance > 1 and num > root.left.number:
             root.left = self.rotateL(root.left)
             return self.rotateR(root)
 
-        # Case 4 - Right Left
         if balance < -1 and num < root.right.number:
             root.right = self.rotateR(root.right)
             return self.rotateL(root)
@@ -125,7 +110,6 @@ class Tree(object):
 
     def remove(self, root, num):
 
-        # Step 1 - Perform standard BST remove
         if not root:
             return root
 
@@ -150,34 +134,24 @@ class Tree(object):
             root.number = t3.number
             root.right = self.remove(root.right, t3.number)
 
-        # If the tree has only one node,
-        # simply return it
         if root is None:
             return root
 
-        # Step 2 - Update the height of the 
-        # ancestor node
+
         root.height = 1 + max(self.height(root.left), self.height(root.right))
 
-        # Step 3 - Get the balance factor
         balance = self.balance(root)
 
-        # Step 4 - If the node is unbalanced, 
-        # then try out the 4 cases
-        # Case 1 - Left Left
         if balance > 1 and self.balance(root.left) >= 0:
             return self.rotateR(root)
 
-        # Case 2 - Right Right
         if balance < -1 and self.balance(root.right) <= 0:
             return self.rotateL(root)
 
-        # Case 3 - Left Right
         if balance > 1 and self.balance(root.left) < 0:
             root.left = self.rotateL(root.left)
             return self.rotateR(root)
 
-        # Case 4 - Right Left
         if balance < -1 and self.balance(root.right) > 0:
             root.right = self.rotateR(root.right)
             return self.rotateL(root)
